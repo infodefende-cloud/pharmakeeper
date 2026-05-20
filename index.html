@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaKeeper Pro - Istruzioni e Automazione</title>
+    <style>
+        :root {
+            --primary: #2b6cb0;
+            --primary-hover: #2c5282;
+            --success: #2f855a;
+            --warning: #dd6b20;
+            --danger: #e53e3e;
+            --background: #f7fafc;
+            --surface: #ffffff;
+            --text: #2d3748;
+            --border: #cbd5e0;
+            --info: #3182ce;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            header { flex-direction: row; text-align: left; }
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .account-selector {
+            background: var(--surface);
+            padding: 8px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        select, input {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        /* Pannello Istruzioni Box */
+        .instructions-panel {
+            background: #ebf8ff;
+            border: 1px solid #90cdf4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: none; /* Gestito da JS */
+        }
+
+        .instructions-panel h4 { margin-top: 0; color: #2b6cb0; font-size: 1.1rem; }
+        .faq-item { margin-bottom: 15px; }
+        .faq-item strong { color: #2c5282; display: block; margin-bottom: 4px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 992px) {
+            .grid { grid-template-columns: 390px 1fr; }
+        }
+
+        .card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+
+        .form-group { margin-bottom: 15px; }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Pulsanti Compilazione Rapida Tipo Uso */
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .tag-btn {
+            background: #edf2f7;
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tag-btn:hover { background: #e2e8f0; border-color: #cbd5e0; }
+
+        .posologia-box {
+            background: #edf2f7;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 5px;
+        }
+
+        .hours-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .hour-check {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8rem;
+            background: white;
+            padding: 6px 2px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .hour-check input { width: auto; margin-bottom: 4px; }
+
+        .search-bar {
+            margin-bottom: 15px;
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        th { background-color: #edf2f7; font-weight: 600; }
+
+        tr.clickable { cursor: pointer; }
+        tr.clickable:hover { background-color: #f7fafc; }
+
+        .status-ok { border-left: 5px solid var(--success); }
+        .status-warning { border-left: 5px solid var(--warning); background-color: #fffaf0; }
+        .status-danger { border-left: 5px solid var(--danger); background-color: #fff5f5; }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: white;
+        }
+        .badge-ok { background-color: var(--success); }
+        .badge-warning { background-color: var(--warning); }
+        .badge-danger { background-color: var(--danger); }
+
+        .btn-action {
+            border: none;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        
+        .btn-info { background-color: var(--info); color: white; width: auto; padding: 8px 15px; }
+        .btn-info:hover { background-color: #2b6cb0; }
+
+        .btn-delete {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        .flex-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .meta-display { font-size: 0.75rem; color: #4a5568; display: block; margin-top: 2px; }
+        .use-badge { background: #e2e8f0; color: #4a5568; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1 style="color: var(--primary); margin: 0;">📦 PharmaKeeper Pro</h1>
+            <p style="margin: 5px 0 0 0; color: #718096;">Scorte temporali, profili dedicati e compilazione assistita</p>
+        </div>
+        
+        <div class="header-actions">
+            <!-- TASTO ISTRUZIONI -->
+            <button class="btn-action btn-info" onclick="toggleInstructions()">❓ Istruzioni e FAQ</button>
+
+            <!-- MULTI-ACCOUNT -->
+            <div class="account-selector">
+                <label for="accountSelect" style="margin: 0; font-size:0.85rem;">👤 Profilo:</label>
+                <select id="accountSelect" onchange="switchAccount()" style="padding: 4px 8px; font-size:0.9rem;">
+                    <option value="Principale">Principale</option>
+                    <option value="Nuccio">Nuccio</option>
+                    <option value="Edoardo">Edoardo</option>
+                </select>
+                <button onclick="addAccount()" style="padding: 4px 8px; font-size: 0.85rem; width: auto;" class="btn-primary">+ Nuovo</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- PANNELLO ISTRUZIONI DROPDOWN -->
+    <div id="instructionsPanel" class="instructions-panel">
+        <h4>💡 Guida all'uso di PharmaKeeper Pro</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="faq-item">
+                <strong>Come funziona il calcolo dei decimali?</strong>
+                Se prendi una pastiglia a giorni alterni, scrivi <code>0.5</code> nel campo consumo. Se ne prendi due al giorno, scrivi <code>2</code>. L'autonomia calcola esattamente i giorni reali di copertura rimanenti dividendo la scorta per questo valore.
+            </div>
+            <div class="faq-item">
+                <strong>Cos'è la posologia oraria assistita?</strong>
+                Selezionando gli orari (8, 12, 16, 20, 22), l'app calcola istantaneamente il consumo giornaliero (1 casella = 1 unità/die, 2 caselle = 2 unità/die). Puoi ignorare le caselle e scrivere a mano se il consumo è inferiore ad una pillola.
+            </div>
+            <div class="faq-item">
+                <strong>Come si usa la compilazione rapida per categoria?</strong>
+                Nel modulo, cliccando sui tasti rapidi (es. <em>Cardiaci</em> o <em>Ipertensivi</em>), l'app etichetterà automaticamente l'uso del farmaco e imposterà la combinazione oraria standard più frequente per quel tipo di terapia.
+            </div>
+            <div class="faq-item">
+                <strong>Come posso aggiornare o modificare un farmaco?</strong>
+                Ti basta fare un click sulla riga del farmaco all'interno della tabella. I dati verranno ricaricati nel modulo di sinistra. Modifica ciò che ti serve e premi "Salva Modifiche".
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <!-- FORM DI INSERIMENTO / AGGIORNAMENTO -->
+        <div class="card">
+            <h3 id="formTitle">Aggiungi Farmaco</h3>
+            <form id="medForm">
+                <input type="hidden" id="originalName">
+                
+                <div class="form-group">
+                    <label for="medName">Nome Farmaco</label>
+                    <input type="text" id="medName" required placeholder="Es. Cardioaspirina o Totalip">
+                    
+                    <!-- COMPILAZIONE RAPIDA DESTINAZIONE USO -->
+                    <div class="category-tags">
+                        <span style="font-size:0.75rem; color:#718096; width:100%;">Compilazione rapida per tipo d'uso:</span>
+                        <button type="button" class="tag-btn" onclick="applyQuickCategory('Cardiaci', '08:00', [8])">🫀 Cardiaci</button>
+                        <button type="button" class="tag-btn" onclick="applyQuickCategory('Ipertensivi', '08:00', [8])">🩺 Ipertensivi</button>
+                        <button type="button" class="tag-btn" onclick="applyQuickCategory('Neurologici', '22:00', [22])">🧠 Neurologici</button>
+                        <button type="button" class="tag-btn" onclick="applyQuickCategory('Gastrici', '08:00 prima dei pasti', [8, 20])">🧪 Gastrici</button>
+                        <button type="button" class="tag-btn" onclick="applyQuickCategory('Integratori', 'Generico', [12])">🌿 Integratori</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="medUse">Destinazione d'Uso / Categoria</label>
+                    <input type="text" id="medUse" placeholder="Es. Ipertensione, Cuore, Stomaco (automatico da sopra)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="medQty">Scorta Attuale (N° unità totali)</label>
+                    <input type="number" id="medQty" min="0" required placeholder="Es. 28">
+                </div>
+
+                <!-- POSOLOGIA ORARIA -->
+                <div class="form-group">
+                    <label>Posologia Giornaliera Guidata</label>
+                    <div class="posologia-box">
+                        <span style="font-size: 0.8rem; color: #4a5568;">Seleziona gli orari di assunzione:</span>
+                        <div class="hours-grid">
+                            <label class="hour-check"><input type="checkbox" class="hr-pills" value="8" onchange="calculateDailyFromHours()">08:00</label>
+                            <label class="hour-check"><input type="checkbox" class="hr-pills" value="12" onchange="calculateDailyFromHours()">12:00</label>
+                            <label class="hour-check"><input type="checkbox" class="hr-pills" value="16" onchange="calculateDailyFromHours()">16:00</label>
+                            <label class="hour-check"><input type="checkbox" class="hr-pills" value="20" onchange="calculateDailyFromHours()">20:00</label>
+                            <label class="hour-check"><input type="checkbox" class="hr-pills" value="22" onchange="calculateDailyFromHours()">22:00</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="medDaily">Consumo Giornaliero (Pillole/Giorno)</label>
+                    <input type="number" id="medDaily" step="0.01" min="0.01" required placeholder="Es. 1 o 0.5">
+                </div>
+
+                <div class="flex-buttons">
+                    <button type="submit" id="btnSubmit" class="btn-action btn-primary">Salva Farmaco</button>
+                    <button type="button" id="btnReset" onclick="resetForm()" class="btn-action" style="display:none; background:#e2e8f0; color:#4a5568;">Annulla</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- STRUMENTI DI RICERCA E TABELLA -->
+        <div class="card" style="overflow-x: auto;">
+            <input type="text" id="searchBar" class="search-bar" placeholder="🔍 Cerca farmaco per nome o categoria d'uso..." oninput="renderTable()">
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Farmaco / Uso</th>
+                        <th>Scorta</th>
+                        <th>Consumo / die</th>
+                        <th>Autonomia</th>
+                        <th>Esaurimento Previsto</th>
+                        <th>Stato</th>
+                        <th>Azione</th>
+                    </tr>
+                </thead>
+                <tbody id="medTableBody">
+                    <!-- Iniettato da JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentAccount = "Principale";
+    
+    // Inizializzazione account nel localStorage
+    if(!localStorage.getItem('pharma_accounts')) {
+        localStorage.setItem('pharma_accounts', JSON.stringify(["Principale", "Nuccio", "Edoardo"]));
+    }
+    
+    // Database strutturato per account: { "Account": [ {name, use, qty, daily, hours}, ... ] }
+    let db = JSON.parse(localStorage.getItem('pharma_db')) || { "Principale": [], "Nuccio": [], "Edoardo": [] };
+
+    const medForm = document.getElementById('medForm');
+    const medTableBody = document.getElementById('medTableBody');
+    const accountSelect = document.getElementById('accountSelect');
+    const instructionsPanel = document.getElementById('instructionsPanel');
+
+    // Mostra/Nasconde il pannello istruzioni FAQ
+    function toggleInstructions() {
+        if(instructionsPanel.style.display === "block") {
+            instructionsPanel.style.display = "none";
+        } else {
+            instructionsPanel.style.display = "block";
+        }
+    }
+
+    // Compilazione Automatica basata sulle categorie selezionate
+    function applyQuickCategory(categoryLabel, noteText, standardHoursArray) {
+        // Scrive il tipo d'uso nel campo dedicato
+        document.getElementById('medUse').value = categoryLabel;
+        
+        // Se il nome del farmaco è vuoto, aiuta a ricordare di inserirlo
+        const nameField = document.getElementById('medName');
+        if(nameField.value === "") {
+            nameField.placeholder = "Inserisci nome farmaco per " + categoryLabel;
+            nameField.focus();
+        }
+
+        // Seleziona automaticamente le checkbox orarie impostate come standard
+        document.querySelectorAll('.hr-pills').forEach(cb => {
+            cb.checked = standardHoursArray.includes(parseInt(cb.value));
+        });
+
+        // Forza il ricalcolo immediato del consumo giornaliero
+        calculateDailyFromHours();
+    }
+
+    function updateAccountDropdown() {
+        const accounts = JSON.parse(localStorage.getItem('pharma_accounts'));
+        accountSelect.innerHTML = '';
+        accounts.forEach(acc => {
+            const opt = document.createElement('option');
+            opt.value = acc;
+            opt.textContent = acc;
+            if(acc === currentAccount) opt.selected = true;
+            accountSelect.appendChild(opt);
+        });
+    }
+
+    function addAccount() {
+        const name = prompt("Inserisci il nome del nuovo profilo utente:");
+        if(!name) return;
+        const cleanName = name.trim();
+        if(cleanName === "") return;
+
+        let accounts = JSON.parse(localStorage.getItem('pharma_accounts'));
+        if(!accounts.includes(cleanName)) {
+            accounts.push(cleanName);
+            localStorage.setItem('pharma_accounts', JSON.stringify(accounts));
+            db[cleanName] = [];
+            localStorage.setItem('pharma_db', JSON.stringify(db));
+        }
+        currentAccount = cleanName;
+        updateAccountDropdown();
+        renderTable();
+        resetForm();
+    }
+
+    function switchAccount() {
+        currentAccount = accountSelect.value;
+        renderTable();
+        resetForm();
+    }
+
+    function calculateDailyFromHours() {
+        const checkboxes = document.querySelectorAll('.hr-pills:checked');
+        if(checkboxes.length > 0) {
+            document.getElementById('medDaily').value = checkboxes.length;
+        } else {
+            document.getElementById('medDaily').value = "";
+        }
+    }
+
+    medForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const originalName = document.getElementById('originalName').value;
+        const name = document.getElementById('medName').value.trim();
+        const use = document.getElementById('medUse').value.trim();
+        const qty = parseFloat(document.getElementById('medQty').value);
+        const daily = parseFloat(document.getElementById('medDaily').value);
+        
+        const checkedHours = [];
+        document.querySelectorAll('.hr-pills:checked').forEach(cb => {
+            checkedHours.push(cb.value);
+        });
+
+        let currentList = db[currentAccount] || [];
+        const newMedData = { name, use, qty, daily, hours: checkedHours };
+
+        if (originalName) {
+            const index = currentList.findIndex(m => m.name.toLowerCase() === originalName.toLowerCase());
+            if(index > -1) currentList[index] = newMedData;
+        } else {
+            const existingIndex = currentList.findIndex(m => m.name.toLowerCase() === name.toLowerCase());
+            if(existingIndex > -1) {
+                currentList[existingIndex] = newMedData;
+            } else {
+                currentList.push(newMedData);
+            }
+        }
+
+        db[currentAccount] = currentList;
+        localStorage.setItem('pharma_db', JSON.stringify(db));
+        
+        resetForm();
+        renderTable();
+    });
+
+    function loadMedIntoForm(name) {
+        const currentList = db[currentAccount] || [];
+        const med = currentList.find(m => m.name.toLowerCase() === name.toLowerCase());
+        
+        if(!med) return;
+
+        document.getElementById('formTitle').textContent = "📝 Aggiorna Farmaco";
+        document.getElementById('btnSubmit').textContent = "Salva Modifiche";
+        document.getElementById('btnReset').style.display = "block";
+        
+        document.getElementById('originalName').value = med.name;
+        document.getElementById('medName').value = med.name;
+        document.getElementById('medUse').value = med.use || "";
+        document.getElementById('medQty').value = med.qty;
+        document.getElementById('medDaily').value = med.daily;
+
+        document.querySelectorAll('.hr-pills').forEach(cb => {
+            cb.checked = med.hours ? med.hours.includes(cb.value) : false;
+        });
+    }
+
+    function resetForm() {
+        medForm.reset();
+        document.getElementById('formTitle').textContent = "Aggiungi Farmaco";
+        document.getElementById('btnSubmit').textContent = "Salva Farmaco";
+        document.getElementById('btnReset').style.display = "none";
+        document.getElementById('originalName').value = "";
+    }
+
+    function deleteMed(index, event) {
+        event.stopPropagation();
+        if(confirm("Vuoi eliminare definitivamente questo farmaco?")) {
+            db[currentAccount].splice(index, 1);
+            localStorage.setItem('pharma_db', JSON.stringify(db));
+            renderTable();
+            resetForm();
+        }
+    }
+
+    function renderTable() {
+        medTableBody.innerHTML = '';
+        const today = new Date();
+        const searchQuery = document.getElementById('searchBar').value.toLowerCase().trim();
+        
+        const currentList = db[currentAccount] || [];
+
+        // Filtra sia per nome del farmaco che per destinazione d'uso
+        const filteredList = currentList.filter(med => {
+            const nameMatch = med.name.toLowerCase().includes(searchQuery);
+            const useMatch = med.use ? med.use.toLowerCase().includes(searchQuery) : false;
+            return nameMatch || useMatch;
+        });
+
+        filteredList.forEach((med, actualIndex) => {
+            const dbIndex = currentList.findIndex(m => m.name === med.name);
+            const autonomyDays = med.daily > 0 ? (med.qty / med.daily) : 0;
+            
+            let expiryDateStr = "-";
+            if (autonomyDays > 0 && med.qty > 0) {
+                const expiryDate = new Date();
+                expiryDate.setDate(today.getDate() + Math.floor(autonomyDays));
+                expiryDateStr = expiryDate.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            } else if (med.qty === 0) {
+                expiryDateStr = "Esaurito";
+            }
+
+            let statusClass = "status-ok";
+            let badgeHtml = '<span class="badge badge-ok">OK</span>';
+
+            if (med.qty === 0 || autonomyDays < 1) {
+                statusClass = "status-danger";
+                badgeHtml = '<span class="badge badge-danger">Critico (<1g)</span>';
+            } else if (autonomyDays <= 7) { 
+                statusClass = "status-warning";
+                badgeHtml = `<span class="badge badge-warning">Scorta < 7gg</span>`;
+            }
+
+            // Costruzione dei dettagli sotto al nome del farmaco (Uso + Orari)
+            let metaHtml = "";
+            if(med.use) {
+                metaHtml += `<span class="use-badge">${med.use}</span>`;
+            }
+            if(med.hours && med.hours.length > 0) {
+                metaHtml += `Ore: ${med.hours.map(h => h + ':00').join(', ')}`;
+            }
+            if(metaHtml !== "") {
+                metaHtml = `<span class="meta-display">${metaHtml}</span>`;
+            }
+
+            const tr = document.createElement('tr');
+            tr.className = `clickable ${statusClass}`;
+            tr.setAttribute('onclick', `loadMedIntoForm("${escape(med.name)}")`);
+            
+            tr.innerHTML = `
+                <td><strong>${med.name}</strong>${metaHtml}</td>
+                <td>${med.qty} unità</td>
+                <td>${med.daily} / gg</td>
+                <td><strong>${autonomyDays.toFixed(1)} gg</strong></td>
+                <td>${expiryDateStr}</td>
+                <td>${badgeHtml}</td>
+                <td><button class="btn-delete" onclick="deleteMed(${dbIndex}, event)">Elimina</button></td>
+            `;
+            medTableBody.appendChild(tr);
+        });
+
+        if(filteredList.length === 0) {
+            medTableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#718096;">Nessun farmaco trovato.</td></tr>`;
+        }
+    }
+
+    function escape(str) {
+        return str.replace(/"/g, '&quot;').replace(/'/g, '\\\'');
+    }
+
+    updateAccountDropdown();
+    renderTable();
+</script>
+
+</body>
+</html>
